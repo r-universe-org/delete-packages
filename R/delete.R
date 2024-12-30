@@ -37,7 +37,7 @@ delete_from_server <- function(universe){
       lapply(deleted, function(package){
         message("Deleting: ", package)
         h <- curl::new_handle(customrequest = 'DELETE', userpwd = userpwd)
-        url <- paste0(cranlike_url, '/packages/', package)
+        url <- paste0(cranlike_url, '/api/packages/', package)
         out <- parse_res(curl::curl_fetch_memory(url, handle = h))
         stopifnot(out$Package == package)
       })
