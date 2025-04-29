@@ -40,7 +40,7 @@ delete_from_server <- function(universe){
         url <- paste0(cranlike_url, '/api/packages/', package)
         res <- curl::curl_fetch_memory(url, handle = h)
         out <- parse_res(res)
-        if(res$status == 200 && out$Package == package){
+        if(res$status == 200 && unique(out$Package) == package){
           message("OK")
         } else {
           message("Fail: HTTP ", res$status)
