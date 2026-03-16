@@ -29,7 +29,7 @@ delete_from_server <- function(universe){
   submodules <- vapply(strsplit(sys::as_text(out$stdout), ' ', fixed = TRUE), `[[`, character(1), 2)
   submodules <- unique(c(submodules, list.files())) # Just in case...
   caterr("Current submodules:", paste(submodules, collapse = ', '), '\n\n')
-  pkgs <- jsonlite::fromJSON(paste0(cranlike_url, '/api/ls'))
+  pkgs <- universe_ls(universe)
   deleted <- pkgs[!(pkgs %in% submodules)]
   if(length(deleted)){
     caterr("Removed packages:", paste(deleted, collapse = ', '), '\n\n')
@@ -99,4 +99,16 @@ parse_res <- function(res){
 
 caterr <- function(...){
   base::cat(..., file = stderr())
+}
+
+universe_ls <- function(universe){
+  url <- sprintf('https://%s.r-universe.dev/api/ls', universe)
+  req <- curl::curl_fetch_memory(url)
+  if(req$status_code == 404){
+    return(character())
+  }
+  if(req$status_code > 400){
+    stop(sprintf("HTTP %d (%s)", req$status_code, url))
+  }
+  jsonlite::fromJSON(rawToChar(req$content))
 }
