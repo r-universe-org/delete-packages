@@ -29,7 +29,7 @@ delete_from_server <- function(universe){
   submodules <- vapply(strsplit(sys::as_text(out$stdout), ' ', fixed = TRUE), `[[`, character(1), 2)
   submodules <- unique(c(submodules, list.files())) # Just in case...
   caterr("Current submodules:", paste(submodules, collapse = ', '), '\n\n')
-  pkgs <- universe_ls(universe)
+  pkgs <- universe_ls_all(universe)
   deleted <- pkgs[!(pkgs %in% submodules)]
   if(length(deleted)){
     caterr("Removed packages:", paste(deleted, collapse = ', '), '\n\n')
@@ -101,8 +101,9 @@ caterr <- function(...){
   base::cat(..., file = stderr())
 }
 
-universe_ls <- function(universe){
-  url <- sprintf('https://%s.r-universe.dev/api/ls', universe)
+universe_ls_all <- function(universe){
+  # Use /api/files to also include 'failure' entries
+  url <- sprintf('https://%s.r-universe.dev/api/files', universe)
   req <- curl::curl_fetch_memory(url)
   if(req$status_code == 404){
     return(character())
@@ -110,5 +111,8 @@ universe_ls <- function(universe){
   if(req$status_code > 400){
     stop(sprintf("HTTP %d (%s)", req$status_code, url))
   }
-  jsonlite::fromJSON(rawToChar(req$content))
+  con <- rawConnection(req$content)
+  on.exit(close(con))
+  df <- jsonlite::stream_in(con, verbose = FALSE)
+  sort(unique(df$package))
 }
