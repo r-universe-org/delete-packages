@@ -23,11 +23,14 @@ delete_from_server <- function(universe){
   # Sanity checks
   stopifnot(file.exists(".registry"))
   stopifnot(file.exists(".gitmodules"))
+  # NB .gitmodules can contain broken entries (wrong name/url) that we do not want anymore
+  submodules <- list.files()
 
   # Get current submodules
-  out <- sys::exec_internal('git', c('config', '--file', '.gitmodules', '--get-regexp', '\\.path$'))
-  submodules <- vapply(strsplit(sys::as_text(out$stdout), ' ', fixed = TRUE), `[[`, character(1), 2)
-  submodules <- unique(c(submodules, list.files())) # Just in case...
+  #out <- sys::exec_internal('git', c('config', '--file', '.gitmodules', '--get-regexp', '\\.path$'))
+  #submodules <- vapply(strsplit(sys::as_text(out$stdout), ' ', fixed = TRUE), `[[`, character(1), 2)
+  #submodules <- unique(c(submodules, list.files())) # Just in case...
+
   caterr("Current submodules:", paste(submodules, collapse = ', '), '\n\n')
   pkgs <- universe_ls_all(universe)
   deleted <- pkgs[!(pkgs %in% submodules)]
