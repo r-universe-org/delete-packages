@@ -87,7 +87,7 @@ delete_from_server <- function(universe){
 }
 
 list_ropensci_docs_repos <- function(){
-  repos <- gh::gh('/users/ropensci-docs/repos?per_page=100', .limit = 1e6)
+  repos <- gh::gh('/users/ropensci-docs/repos', .limit = Inf)
   vapply(repos, function(x){
     return(x$name)
   }, character(1))
